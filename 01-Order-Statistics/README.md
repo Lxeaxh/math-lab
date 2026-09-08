@@ -1,183 +1,272 @@
-# Math Lab
+# Order Statistics
 
-A personal learning repository for developing a deeper understanding of mathematics, statistics, and machine learning through mathematical reasoning, Python experiments, and clear interpretation.
+This notebook investigates **order statistics** by connecting ranking, counting, probability, and simulation.
 
-Rather than treating mathematics as a collection of formulas to memorize, this repository focuses on understanding **why mathematical ideas work**, testing them with examples or simulations, and explaining the results clearly.
+The main goal is to understand why an event involving the \(r\)-th smallest observation can be rewritten as a counting problem involving the original observations.
 
-## Purpose
+## Main Question
 
-The main goals of this repository are to:
+The central relationship is
 
-* build a deeper understanding of mathematics and statistics;
-* connect mathematical theory with Python implementation;
-* practice the typical reasoning process used in data science;
-* verify theoretical results through computation, visualization, or simulation when appropriate;
-* improve my ability to explain technical ideas clearly;
-* build reproducible notebooks that show both my reasoning process and technical development.
+$$
+Y_{(r)} \le y
+\quad\Longleftrightarrow\quad
+\#\{X_i \le y\} \ge r.
+$$
 
-The purpose is not to make each notebook unnecessarily complicated.
+In words:
 
-Instead, I focus on the following process:
+> The \(r\)-th smallest observation is less than or equal to \(y\) if and only if at least \(r\) observations are less than or equal to \(y\).
 
-**Question → Reasoning → Experiment → Evidence → Interpretation**
+A major point of confusion was the difference between:
 
-When appropriate, I also use a broader data science workflow:
+$$
+Y_{(4)} \le 0.5
+$$
 
-**Question → Hypothesis → Data / Example → Exploration → Method → Result → Validation → Interpretation**
+and
 
-## Approach
+$$
+\text{exactly 4 observations are } \le 0.5.
+$$
 
-Each notebook begins with a specific question or point of confusion.
+The first condition actually means
 
-I first identify what I do and do not understand, and then choose an investigation method that fits the question.
+$$
+\text{at least 4 observations are } \le 0.5.
+$$
 
-Depending on the topic, this may include:
+## What This Notebook Investigates
 
-* mathematical derivation;
-* hand calculations;
-* small concrete examples;
-* visualization;
-* simulation;
-* Python implementation;
-* comparison with standard libraries;
-* theoretical vs. empirical validation.
+The notebook focuses on the following questions:
 
-The method is chosen based on what helps answer the question rather than to make the notebook look technically complex.
+* What does the \(r\)-th order statistic represent?
+* Why does \(Y_{(4)} \le 0.5\) include the case where all five observations are below \(0.5\)?
+* Why is an order-statistic event an “at least” condition rather than an “exactly” condition?
+* Why does the Binomial distribution appear in order-statistic probabilities?
+* Why does the CDF \(F(y)\) become the Binomial success probability?
+* How is a CDF obtained from a PDF?
+* Why is the upper limit of the CDF integral the threshold rather than the end of the support?
+* Can the theoretical relationship be verified with Python simulation?
 
-## Notebook Style
+## Example Distribution
 
-Most notebooks follow a structure similar to:
+The main example uses the probability density function
 
-### Goal / Question
+$$
+f(x)=2x,\qquad 0<x<1.
+$$
 
-What do I want to understand?
+Its cumulative distribution function is
 
-### Confusion Map
+$$
+F(x)=\int_0^x2t\,dt=x^2.
+$$
 
-What was unclear before starting the investigation?
+Therefore,
 
-### Minimal Background
+$$
+F\left(\frac12\right)=\frac14.
+$$
 
-Only the definitions, formulas, and assumptions needed for the investigation.
+This means that each independent observation has probability
 
-### Investigation
+$$
+P\left(X_i\le\frac12\right)=\frac14
+$$
 
-A focused mathematical or computational investigation.
+of falling below the threshold.
 
-This may contain:
+## Connection to the Binomial Distribution
 
-* a hypothesis;
-* a concrete example;
-* a calculation;
-* Python code;
-* a visualization;
-* a simulation.
+Define
 
-### Results / Findings
+$$
+K=\#\{X_i\le y\}.
+$$
 
-What did the calculation or experiment show?
+If \(X_1,\ldots,X_n\) are independent and identically distributed, then
 
-### Interpretation
+$$
+K\sim\operatorname{Binomial}(n,F(y)).
+$$
 
-Why did the result occur, and what does it mean mathematically?
+The order-statistic event can then be rewritten as
 
-### What Changed in My Understanding
+$$
+Y_{(r)}\le y
+\quad\Longleftrightarrow\quad
+K\ge r.
+$$
 
-How is my understanding different from before the investigation?
+Therefore,
 
-### Remaining Questions
+$$
+P(Y_{(r)}\le y)
+=
+P(K\ge r).
+$$
 
-What would be worth investigating next?
+Using the Binomial distribution,
 
-Not every notebook needs every section. The important part is maintaining the flow:
+$$
+P(Y_{(r)}\le y)
+=
+\sum_{k=r}^{n}
+\binom{n}{k}
+[F(y)]^k
+[1-F(y)]^{n-k}.
+$$
 
-**Question → Evidence → Interpretation**
+## Worked Example
 
-## Current Investigations
+For
 
-### Order Statistics
+$$
+n=5,\qquad r=4,\qquad y=\frac12,
+$$
 
-The first notebook investigates the connection between order statistics and counting.
+we have
 
-The main question is why an event involving the r-th smallest observation can be rewritten as a statement about how many original observations fall below a threshold.
+$$
+F\left(\frac12\right)=\frac14.
+$$
 
-The investigation includes:
+Therefore,
 
-* order statistics and ranking;
-* the difference between “exactly” and “at least”;
-* the connection between order statistics and the Binomial distribution;
-* converting a PDF into a CDF;
-* hand calculation of an order-statistic probability;
-* visualization of observations relative to a threshold;
-* from-scratch Python calculation;
-* comparison with SciPy;
-* simulation-based validation.
+$$
+K\sim\operatorname{Binomial}\left(5,\frac14\right).
+$$
 
-The main conceptual lesson is that **ranking and counting can provide two different descriptions of the same event**.
+The target event becomes
 
-## Repository Structure
+$$
+P\left(Y_{(4)}\le\frac12\right)
+=
+P(K\ge4).
+$$
 
-The repository intentionally starts with a minimal structure.
+Thus,
 
-```text
-math-lab/
-├── README.md
-└── order_statistics.ipynb
-```
+$$
+P(K\ge4)
+=
+P(K=4)+P(K=5).
+$$
 
-I do not organize notebooks into predefined categories such as `probability/`, `statistics/`, or `machine-learning/` before they are needed.
+The theoretical result is
 
-New folders, Python files, datasets, or reusable utilities will be added only when actual projects create a reason for them.
+$$
+P\left(Y_{(4)}\le\frac12\right)
+=
+\frac1{64}
+=
+0.015625.
+$$
 
-The repository structure therefore grows with the work rather than being designed in advance.
+The \(K=5\) case must be included because having all five observations below the threshold still guarantees that the fourth smallest observation is below the threshold.
 
-## Tools
+## Methods Used
 
-The main tools used in this repository include:
+This notebook uses several approaches to investigate the same idea:
 
-* Python
-* NumPy
-* pandas
-* Matplotlib
-* SciPy
-* Jupyter Notebook
-* VS Code
-* Git
-* GitHub
+* concrete examples;
+* sorting observations;
+* threshold counting;
+* a number-line visualization;
+* PDF and CDF visualization;
+* hand calculation;
+* a from-scratch Binomial calculation in Python;
+* SciPy comparison;
+* Monte Carlo simulation;
+* theoretical vs. simulated validation.
 
-Additional libraries will be introduced only when they are useful for a specific investigation.
+The purpose of using multiple methods is not to make the notebook more complicated, but to verify the same mathematical idea from different perspectives.
 
-## What I Am Practicing
+## Validation
 
-Through these notebooks, I am practicing both mathematical and data science skills, including:
+Two equivalent events are checked in the simulation:
 
-* translating mathematical questions into testable problems;
-* forming hypotheses before looking at results;
-* connecting formulas with their underlying meaning;
-* implementing mathematical ideas in Python;
-* interpreting computational outputs;
-* designing useful visualizations;
-* using simulation to test theoretical claims;
-* comparing theoretical and empirical results;
-* validating from-scratch calculations with standard libraries;
-* separating results from interpretation;
-* communicating technical reasoning clearly.
+$$
+Y_{(4)}\le0.5
+$$
 
-## Development Philosophy
+and
 
-This repository is a learning environment, so some notebooks may begin with basic questions.
+$$
+\#\{X_i\le0.5\}\ge4.
+$$
 
-Those questions are intentionally documented because identifying and resolving misunderstandings is part of the learning process.
+The simulation verifies that these two conditions identify exactly the same samples.
 
-The goal is not to demonstrate that every concept was already understood.
+The simulated probability is also compared with the theoretical value
 
-The goal is to demonstrate the ability to:
+$$
+0.015625.
+$$
 
-1. identify a precise question;
-2. reason about it mathematically;
-3. choose an appropriate investigation method;
-4. test the idea;
-5. evaluate the evidence;
-6. explain what the result means.
+Small differences between the simulated and theoretical probabilities are expected because simulation uses a finite number of random samples.
 
-Over time, the notebooks should show growth in both mathematical understanding and technical problem-solving ability.
+## Key Finding
+
+The main insight from this notebook is:
+
+> **Ranking and counting are two different ways of describing the same event.**
+
+Order statistics describe observations through their **positions after sorting**.
+
+The Binomial distribution describes the same situation by **counting how many observations cross a threshold**.
+
+The conceptual chain is
+
+$$
+f(x)
+\longrightarrow
+F(y)
+\longrightarrow
+P(X_i\le y)
+\longrightarrow
+K
+\longrightarrow
+P(K\ge r)
+\longrightarrow
+P(Y_{(r)}\le y).
+$$
+
+Understanding each step in this chain makes the connection between order statistics, CDFs, and the Binomial distribution much clearer.
+
+## What Changed in My Understanding
+
+Before this investigation, I interpreted
+
+$$
+Y_{(4)}\le0.5
+$$
+
+as meaning that exactly four observations must be below \(0.5\).
+
+After working through concrete examples and simulation, I understand that it means **at least four observations** must satisfy the threshold.
+
+I also understand that:
+
+* \(F(y)\) is the probability that one observation falls below the threshold;
+* the Binomial distribution counts how many observations fall below that threshold;
+* an order-statistic probability can therefore be converted into a Binomial tail probability;
+* simulation can be used to validate the theoretical relationship.
+
+## Remaining Question
+
+A natural next step is to understand how the PDF of the \(r\)-th order statistic is obtained from its CDF.
+
+The general PDF is
+
+$$
+g_r(y)
+=
+\frac{n!}{(r-1)!(n-r)!}
+[F(y)]^{r-1}
+[1-F(y)]^{n-r}
+f(y).
+$$
+
+A detailed derivation of this result is left for a future investigation.
