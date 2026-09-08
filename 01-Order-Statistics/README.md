@@ -26,20 +26,22 @@ The central question of this notebook is:
 
 > Why does the event $Y_{(r)} \le y$ mean that **at least** $r$ observations must be less than or equal to $y$?
 
-Define
+Define the counting variable
 
 $$
-K=\sum_{i=1}^{n}\mathbf{1}(X_i\le y),
+K=\sum_{i=1}^{n} I(X_i\le y),
 $$
 
-where $K$ is the number of observations that are less than or equal to $y$.
+where $I(X_i\le y)$ equals 1 when $X_i\le y$ and 0 otherwise.
+
+Therefore, $K$ represents the number of observations that are less than or equal to $y$.
 
 The key relationship is
 
 $$
-Y_{(r)} \le y
+Y_{(r)}\le y
 \quad\Longleftrightarrow\quad
-K \ge r.
+K\ge r.
 $$
 
 <h2>Initial Confusion</h2>
@@ -49,7 +51,7 @@ At first, I understood that $Y_{(4)}$ represents the fourth smallest observation
 However, I incorrectly interpreted
 
 $$
-Y_{(4)} \le 0.5
+Y_{(4)}\le0.5
 $$
 
 as meaning:
@@ -100,7 +102,7 @@ $$
 K\ge4.
 $$
 
-The fifth observation is allowed to also fall below the threshold.
+The fifth observation is also allowed to fall below the threshold.
 
 Therefore,
 
@@ -136,16 +138,16 @@ $$
 
 where $F(y)$ is the CDF of the original distribution.
 
-The counting variable can be written as
+The counting variable is
 
 $$
-K=\sum_{i=1}^{n}\mathbf{1}(X_i\le y).
+K=\sum_{i=1}^{n} I(X_i\le y).
 $$
 
 If the observations are independent and identically distributed, then
 
 $$
-K\sim\operatorname{Binomial}(n,F(y)).
+K\sim \mathrm{Binomial}(n,F(y)).
 $$
 
 Since
@@ -159,9 +161,7 @@ $$
 the order-statistic probability can be rewritten as
 
 $$
-P(Y_{(r)}\le y)
-=
-P(K\ge r).
+P(Y_{(r)}\le y)=P(K\ge r).
 $$
 
 A Binomial PMF gives the probability of exactly $k$ successes:
@@ -169,7 +169,9 @@ A Binomial PMF gives the probability of exactly $k$ successes:
 $$
 P(K=k)
 =
-\binom{n}{k}p^k(1-p)^{n-k}.
+\binom{n}{k}
+p^k
+(1-p)^{n-k}.
 $$
 
 Therefore, an "at least" probability requires adding all possible values from $r$ to $n$:
@@ -189,7 +191,8 @@ The example distribution used in this notebook is
 
 $$
 f(x)=2x,
-\qquad 0<x<1.
+\qquad
+0<x<1.
 $$
 
 To calculate an order-statistic probability, I first need the probability that one observation falls below a given threshold.
@@ -203,16 +206,15 @@ $$
 For this distribution,
 
 $$
-F(x)
-=
-\int_0^x 2t\,dt.
+F(x)=\int_0^x 2t\,dt.
 $$
 
 Evaluating the integral gives
 
 $$
 F(x)=x^2,
-\qquad 0<x<1.
+\qquad
+0<x<1.
 $$
 
 The upper limit is $x$ rather than $1$ because the CDF asks for the accumulated probability only up to the chosen value $x$.
@@ -250,10 +252,11 @@ $$
 Therefore,
 
 $$
-K
-\sim
-\operatorname{Binomial}
-\left(5,\frac{1}{4}\right).
+K\sim
+\mathrm{Binomial}
+\left(
+5,\frac{1}{4}
+\right).
 $$
 
 The target probability is
@@ -284,8 +287,8 @@ $$
 P(K=4)
 =
 \binom{5}{4}
-\left(\frac14\right)^4
-\left(\frac34\right).
+\left(\frac{1}{4}\right)^4
+\left(\frac{3}{4}\right).
 $$
 
 For exactly five observations,
@@ -294,13 +297,13 @@ $$
 P(K=5)
 =
 \binom{5}{5}
-\left(\frac14\right)^5.
+\left(\frac{1}{4}\right)^5.
 $$
 
 Combining the two cases gives
 
 $$
-P\left(Y_{(4)}\le\frac12\right)
+P\left(Y_{(4)}\le\frac{1}{2}\right)
 =
 \frac{1}{64}.
 $$
@@ -308,7 +311,7 @@ $$
 Therefore,
 
 $$
-P\left(Y_{(4)}\le\frac12\right)
+P\left(Y_{(4)}\le\frac{1}{2}\right)
 =
 0.015625.
 $$
@@ -340,7 +343,7 @@ $$
 where
 
 $$
-K=\sum_{i=1}^{5}\mathbf{1}(X_i\le0.5).
+K=\sum_{i=1}^{5} I(X_i\le0.5).
 $$
 
 The simulation verifies that these two conditions identify exactly the same samples.
