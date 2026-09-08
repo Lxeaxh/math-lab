@@ -1,12 +1,32 @@
-# Order Statistics
+# Order Statistics: From Ranking to Counting
 
-This notebook investigates **order statistics** by connecting ranking, counting, probability, and simulation.
+This notebook explores **order statistics** through mathematical reasoning, visualization, hand calculation, and Python simulation.
 
-The main goal is to understand why an event involving the \(r\)-th smallest observation can be rewritten as a counting problem involving the original observations.
+The main goal is to understand why a statement about the position of an observation after sorting can be rewritten as a counting problem.
+
+## Notebook
+
+[Open the Order Statistics notebook](./order_statistics.ipynb)
 
 ## Main Question
 
-The central relationship is
+Suppose the original observations are
+
+$$
+X_1, X_2, \ldots, X_n
+$$
+
+and the sorted observations are
+
+$$
+Y_{(1)} \le Y_{(2)} \le \cdots \le Y_{(n)}.
+$$
+
+The central question of this notebook is:
+
+> Why does the event $Y_{(r)} \le y$ mean that **at least** $r$ observations must be less than or equal to $y$?
+
+The key relationship is
 
 $$
 Y_{(r)} \le y
@@ -14,103 +34,140 @@ Y_{(r)} \le y
 \#\{X_i \le y\} \ge r.
 $$
 
-In words:
+## Initial Confusion
 
-> The \(r\)-th smallest observation is less than or equal to \(y\) if and only if at least \(r\) observations are less than or equal to \(y\).
+At first, I understood that $Y_{(4)}$ represents the fourth smallest observation.
 
-A major point of confusion was the difference between:
+However, I incorrectly interpreted
 
 $$
 Y_{(4)} \le 0.5
 $$
 
-and
+as meaning:
+
+> Exactly four observations are less than or equal to $0.5$.
+
+The main confusion was why a case in which **all five observations** are less than or equal to $0.5$ must also be included.
+
+This notebook investigates why the correct interpretation is:
+
+> At least four observations are less than or equal to $0.5$.
+
+## Investigation 1: Ranking vs. Counting
+
+Consider the sorted sample
 
 $$
-\text{exactly 4 observations are } \le 0.5.
+0.10,\ 0.20,\ 0.30,\ 0.40,\ 0.45.
 $$
 
-The first condition actually means
+The fourth order statistic is
 
 $$
-\text{at least 4 observations are } \le 0.5.
-$$
-
-## What This Notebook Investigates
-
-The notebook focuses on the following questions:
-
-* What does the \(r\)-th order statistic represent?
-* Why does \(Y_{(4)} \le 0.5\) include the case where all five observations are below \(0.5\)?
-* Why is an order-statistic event an “at least” condition rather than an “exactly” condition?
-* Why does the Binomial distribution appear in order-statistic probabilities?
-* Why does the CDF \(F(y)\) become the Binomial success probability?
-* How is a CDF obtained from a PDF?
-* Why is the upper limit of the CDF integral the threshold rather than the end of the support?
-* Can the theoretical relationship be verified with Python simulation?
-
-## Example Distribution
-
-The main example uses the probability density function
-
-$$
-f(x)=2x,\qquad 0<x<1.
-$$
-
-Its cumulative distribution function is
-
-$$
-F(x)=\int_0^x2t\,dt=x^2.
+Y_{(4)} = 0.40.
 $$
 
 Therefore,
 
 $$
-F\left(\frac12\right)=\frac14.
+Y_{(4)} \le 0.5.
 $$
 
-This means that each independent observation has probability
+At the same time, all five observations satisfy the threshold, so
 
 $$
-P\left(X_i\le\frac12\right)=\frac14
+K = 5.
 $$
 
-of falling below the threshold.
+This shows that the condition is not
 
-## Connection to the Binomial Distribution
+$$
+K = 4,
+$$
+
+but rather
+
+$$
+K \ge 4.
+$$
+
+The fifth observation is allowed to also fall below the threshold.
+
+Therefore,
+
+$$
+Y_{(4)} \le 0.5
+\quad\Longleftrightarrow\quad
+K \ge 4.
+$$
+
+More generally,
+
+$$
+Y_{(r)} \le y
+\quad\Longleftrightarrow\quad
+\#\{X_i \le y\} \ge r.
+$$
+
+The notebook uses a number-line visualization to make this difference between **exactly** and **at least** easier to see.
+
+## Investigation 2: Why the Binomial Distribution Appears
+
+For each original observation, define a success as
+
+$$
+X_i \le y.
+$$
+
+The probability of success is
+
+$$
+P(X_i \le y) = F(y),
+$$
+
+where $F(y)$ is the CDF of the original distribution.
 
 Define
 
 $$
-K=\#\{X_i\le y\}.
+K = \#\{X_i \le y\}.
 $$
 
-If \(X_1,\ldots,X_n\) are independent and identically distributed, then
+If the observations are independent and identically distributed, then
 
 $$
-K\sim\operatorname{Binomial}(n,F(y)).
+K \sim \operatorname{Binomial}(n, F(y)).
 $$
 
-The order-statistic event can then be rewritten as
+Since
 
 $$
-Y_{(r)}\le y
+Y_{(r)} \le y
 \quad\Longleftrightarrow\quad
-K\ge r.
+K \ge r,
 $$
 
-Therefore,
+the order-statistic probability can be rewritten as
 
 $$
-P(Y_{(r)}\le y)
+P(Y_{(r)} \le y)
 =
-P(K\ge r).
+P(K \ge r).
 $$
 
-Using the Binomial distribution,
+A Binomial PMF gives the probability of **exactly** $k$ successes:
 
 $$
-P(Y_{(r)}\le y)
+P(K=k)
+=
+\binom{n}{k}p^k(1-p)^{n-k}.
+$$
+
+Therefore, an "at least" probability requires adding all possible values from $r$ to $n$:
+
+$$
+P(Y_{(r)} \le y)
 =
 \sum_{k=r}^{n}
 \binom{n}{k}
@@ -118,35 +175,96 @@ P(Y_{(r)}\le y)
 [1-F(y)]^{n-k}.
 $$
 
-## Worked Example
+## Investigation 3: From PDF to CDF
 
-For
+The example distribution used in this notebook is
 
 $$
-n=5,\qquad r=4,\qquad y=\frac12,
+f(x)=2x,
+\qquad 0<x<1.
+$$
+
+To calculate an order-statistic probability, I first need the probability that one observation falls below a given threshold.
+
+The CDF is
+
+$$
+F(x)=P(X\le x).
+$$
+
+For this distribution,
+
+$$
+F(x)
+=
+\int_0^x 2t\,dt.
+$$
+
+Evaluating the integral gives
+
+$$
+F(x)=x^2,
+\qquad 0<x<1.
+$$
+
+The upper limit is $x$ rather than $1$ because the CDF asks for the accumulated probability only up to the chosen value $x$.
+
+The notebook also visualizes both the PDF and CDF to connect the integral with accumulated probability.
+
+## Worked Example
+
+Consider
+
+$$
+n=5,
+\qquad
+r=4,
+\qquad
+y=\frac{1}{2}.
+$$
+
+Since
+
+$$
+F(x)=x^2,
 $$
 
 we have
 
 $$
-F\left(\frac12\right)=\frac14.
+F\left(\frac{1}{2}\right)
+=
+\left(\frac{1}{2}\right)^2
+=
+\frac{1}{4}.
 $$
 
 Therefore,
 
 $$
-K\sim\operatorname{Binomial}\left(5,\frac14\right).
+K
+\sim
+\operatorname{Binomial}
+\left(
+5,\frac{1}{4}
+\right).
 $$
 
-The target event becomes
+The target probability is
 
 $$
-P\left(Y_{(4)}\le\frac12\right)
+P\left(Y_{(4)}\le\frac{1}{2}\right).
+$$
+
+Using the counting interpretation,
+
+$$
+P\left(Y_{(4)}\le\frac{1}{2}\right)
 =
 P(K\ge4).
 $$
 
-Thus,
+Therefore,
 
 $$
 P(K\ge4)
@@ -154,44 +272,60 @@ P(K\ge4)
 P(K=4)+P(K=5).
 $$
 
-The theoretical result is
+For exactly four observations,
+
+$$
+P(K=4)
+=
+\binom{5}{4}
+\left(\frac14\right)^4
+\left(\frac34\right).
+$$
+
+For exactly five observations,
+
+$$
+P(K=5)
+=
+\binom{5}{5}
+\left(\frac14\right)^5.
+$$
+
+Combining the two cases gives
 
 $$
 P\left(Y_{(4)}\le\frac12\right)
 =
-\frac1{64}
+\frac{1}{64}.
+$$
+
+Therefore,
+
+$$
+P\left(Y_{(4)}\le\frac12\right)
 =
 0.015625.
 $$
 
-The \(K=5\) case must be included because having all five observations below the threshold still guarantees that the fourth smallest observation is below the threshold.
+The $K=5$ case must be included because all five observations being below the threshold still guarantees that the fourth smallest observation is below the threshold.
 
-## Methods Used
+## Python Validation
 
-This notebook uses several approaches to investigate the same idea:
+The theoretical calculation is checked in three ways:
 
-* concrete examples;
-* sorting observations;
-* threshold counting;
-* a number-line visualization;
-* PDF and CDF visualization;
-* hand calculation;
-* a from-scratch Binomial calculation in Python;
-* SciPy comparison;
-* Monte Carlo simulation;
-* theoretical vs. simulated validation.
+1. A Binomial probability is implemented directly in Python.
+2. The result is compared with SciPy.
+3. A Monte Carlo simulation estimates the probability empirically.
 
-The purpose of using multiple methods is not to make the notebook more complicated, but to verify the same mathematical idea from different perspectives.
+The simulation independently constructs two events:
 
-## Validation
-
-Two equivalent events are checked in the simulation:
+**Order-statistic condition**
 
 $$
 Y_{(4)}\le0.5
 $$
 
-and
+**Counting condition**
 
 $$
 \#\{X_i\le0.5\}\ge4.
@@ -199,25 +333,43 @@ $$
 
 The simulation verifies that these two conditions identify exactly the same samples.
 
-The simulated probability is also compared with the theoretical value
+The simulated probability is also close to the theoretical value
 
 $$
 0.015625.
 $$
 
-Small differences between the simulated and theoretical probabilities are expected because simulation uses a finite number of random samples.
+Small differences between the theoretical and simulated probabilities are expected because Monte Carlo simulation uses a finite number of random samples.
+
+## Methods Used
+
+This notebook uses:
+
+* mathematical reasoning
+* concrete examples
+* sorting and counting
+* number-line visualization
+* PDF and CDF visualization
+* hand calculation
+* NumPy
+* from-scratch Binomial calculation
+* SciPy validation
+* Monte Carlo simulation
+* theoretical vs. empirical comparison
+
+Each method is used to answer a specific question rather than simply adding technical complexity.
 
 ## Key Finding
 
-The main insight from this notebook is:
+The central insight from this investigation is:
 
 > **Ranking and counting are two different ways of describing the same event.**
 
 Order statistics describe observations through their **positions after sorting**.
 
-The Binomial distribution describes the same situation by **counting how many observations cross a threshold**.
+The Binomial distribution describes the same event by **counting how many observations cross a threshold**.
 
-The conceptual chain is
+The reasoning process can be summarized as
 
 $$
 f(x)
@@ -233,30 +385,32 @@ P(K\ge r)
 P(Y_{(r)}\le y).
 $$
 
-Understanding each step in this chain makes the connection between order statistics, CDFs, and the Binomial distribution much clearer.
-
 ## What Changed in My Understanding
 
-Before this investigation, I interpreted
+Before this investigation:
 
-$$
-Y_{(4)}\le0.5
-$$
+* I thought $Y_{(4)}\le0.5$ meant exactly four observations were below $0.5$.
+* I did not understand why the case with all five observations below $0.5$ had to be included.
+* I understood the Binomial distribution separately but did not see its connection to order statistics.
+* I was unsure why $F(y)$ appeared as the Binomial success probability.
+* I confused calculating a CDF with integrating across the full support.
 
-as meaning that exactly four observations must be below \(0.5\).
+After this investigation:
 
-After working through concrete examples and simulation, I understand that it means **at least four observations** must satisfy the threshold.
-
-I also understand that:
-
-* \(F(y)\) is the probability that one observation falls below the threshold;
-* the Binomial distribution counts how many observations fall below that threshold;
-* an order-statistic probability can therefore be converted into a Binomial tail probability;
-* simulation can be used to validate the theoretical relationship.
+* I understand that $Y_{(4)}\le0.5$ means **at least four** observations are below the threshold.
+* I understand that later-ranked observations can also lie below the threshold.
+* I see the Binomial distribution as a way to count how many observations cross the threshold.
+* I understand that $F(y)$ is the probability that one observation satisfies $X_i\le y$.
+* I understand why the CDF integrates only up to the chosen threshold.
+* I can connect the mathematical result with a Python simulation.
 
 ## Remaining Question
 
-A natural next step is to understand how the PDF of the \(r\)-th order statistic is obtained from its CDF.
+This notebook focuses mainly on understanding the CDF of an order statistic.
+
+A natural next question is:
+
+> How can the PDF of the $r$-th order statistic be derived from its CDF?
 
 The general PDF is
 
@@ -269,4 +423,4 @@ g_r(y)
 f(y).
 $$
 
-A detailed derivation of this result is left for a future investigation.
+A detailed derivation is left for a future investigation.
